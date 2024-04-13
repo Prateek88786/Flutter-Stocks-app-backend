@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express=require("express");
 const axios=require("axios");
 const mongoose=require("mongoose");
@@ -6,68 +7,13 @@ var refresh;
 var stockList;
 const today = new Date();
 const year = today.getFullYear();
-const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+const month = String(today.getMonth() + 1).padStart(2, '0'); 
 const day = String(today.getDate()).padStart(2, '0');
 const dateString = `${year}-${month}-${day}`;
-const fetchData=async()=>{
-    for(let i=0;i<20;i++){
-        const response=await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stocks[i].symbol}&apikey=LGI4GGCHEZBB4AJO`);
-        console.log(`Response for ${stocks[i].name}:`, response.data);
-        stocks[i]["price"]=response.data["Global Quote"]["05. price"]
-        console.log(`Price for ${stocks[i].name}: ${stocks[i].price}`);
 
-
-
-    }
-    console.log(stocks)
-    
-}
-stockList = [
-    {"name": "Apple Inc.", "symbol": "AAPL", "price": 200.23},
-  {"name": "Amazon.com Inc.", "symbol": "AMZN", "price": 3400.56},
-  {"name": "NVIDIA Corporation", "symbol": "NVDA", "price": 600.89},
-  {"name": "Microsoft Corporation", "symbol": "MSFT", "price": 290.76},
-  {"name": "Facebook, Inc.", "symbol": "FB", "price": 300.45},
-  {"name": "Netflix Inc.", "symbol": "NFLX", "price": 550.67},
-  {"name": "PepsiCo, Inc.", "symbol": "PEP", "price": 150.67},
-  {"name": "Twitter, Inc.", "symbol": "TWTR", "price": 70.34},
-  {"name": "Intel Corporation", "symbol": "INTC", "price": 55.78},
-  {"name": "Adobe Inc.", "symbol": "ADBE", "price": 600.45},
-  {"name": "Tesla, Inc.", "symbol": "TSLA", "price": 800.12},
-  {"name": "Alphabet Inc.", "symbol": "GOOGL", "price": 2700.89},
-  {"name": "Visa Inc.", "symbol": "V", "price": 250.67},
-  {"name": "Walmart Inc.", "symbol": "WMT", "price": 140.78},
-  {"name": "Bank of America Corp", "symbol": "BAC", "price": 40.45},
-  {"name": "Salesforce.com Inc", "symbol": "CRM", "price": 220.78},
-  {"name": "McDonald's Corp", "symbol": "MCD", "price": 230.56},
-  {"name": "Oracle Corporation", "symbol": "ORCL", "price": 80.67},
-  {"name": "PayPal Holdings, Inc.", "symbol": "PYPL", "price": 220.34},
-  {"name": "Johnson & Johnson", "symbol": "JNJ", "price": 170.45},
-];
-const test=[{
-    "_id": "660fc4e4a48ec432830db0dd",
-    "bought": [
-    {
-    "name": "Apple Inc.",
-    "symbol": "AAPL",
-    "price": 150.23,
-    "quantity": 200
-    },
-    {
-    "name": "Facebook, Inc.",
-    "symbol": "FB",
-    "price": 300.45,
-    "quantity": 300
-    }
-    ],
-    "email": "prateek88786@gmail.com",
-    "name": "Prateek Vashishth",
-    "password": "newton13"
-}]
 app.use(express.json())
-//fetchData();
 
-mongoose.connect('mongodb+srv://prateek88786:newton13@cluster0.dwo5jsc.mongodb.net/stockDB')
+mongoose.connect(`mongodb+srv://prateek88786:${process.env.DB_PASS}@cluster0.dwo5jsc.mongodb.net/stockDB`)
 const user=mongoose.model('user',{
     name:String,
     email: String,
@@ -148,7 +94,6 @@ app.get('/api/stocks',async(req,res)=>{
     
         }
         await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":dateString}})
-        console.log(stockList)
 
     }
     else{
