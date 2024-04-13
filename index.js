@@ -26,7 +26,9 @@ const stocks=mongoose.model('stocks',{
     stockList:Array,
     refreshed:String
 })
-
+app.get("/",(req,res)=>{
+    res.send("App is running. Go to the defined routes for data. The only get route is /api/stocks ")
+})
 app.get('/api/users',async(req,res)=>{
     const data =await user.find()
     res.json(data)
