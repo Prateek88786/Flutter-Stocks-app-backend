@@ -1,3 +1,4 @@
+const cron=require('node-cron')
 require('dotenv').config();
 const express=require("express");
 const axios=require("axios");
@@ -10,6 +11,30 @@ const year = today.getFullYear();
 const month = String(today.getMonth() + 1).padStart(2, '0'); 
 const day = String(today.getDate()).padStart(2, '0');
 const dateString = `${year}-${month}-${day}`;
+
+const update=async()=>{
+    let data=await stocks.find();
+    refresh=data[0]["refreshed"]
+    stockList=data[0]["stockList"]
+    for(let i=0;i<20;i++){
+        const response=await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockList[i].symbol}&apikey=M4OBW5U3DI22DS1C`);
+        console.log(`Response for ${stockList[i].name}:`, response.data);
+        stockList[i]["price"]=parseFloat(response.data["Global Quote"]["05. price"])
+        console.log(`Price for ${stockList[i].name}: ${stockList[i].price}`);
+    
+    
+    
+    }
+    await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":dateString}})
+
+}
+
+cron.schedule('30 16 * * *', async() => {
+    await update()
+});
+  
+  
+    
 
 app.use(express.json())
 
@@ -81,27 +106,9 @@ app.post('/api/sell/:email/:name/:symbol/:quantity/:price/:currentPrice',async(r
 })
 
 app.get('/api/stocks',async(req,res)=>{
-    let data=await stocks.find();
-    refresh=data[0]["refreshed"]
-    stockList=data[0]["stockList"]
-    if(refresh!=dateString){
-        stockList=data[0]['stockList']
-        for(let i=0;i<20;i++){
-            const response=await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockList[i].symbol}&apikey=M4OBW5U3DI22DS1C`);
-            console.log(`Response for ${stockList[i].name}:`, response.data);
-            stockList[i]["price"]=parseFloat(response.data["Global Quote"]["05. price"])
-            console.log(`Price for ${stockList[i].name}: ${stockList[i].price}`);
     
-    
-    
-        }
-        await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":dateString}})
-
-    }
-    else{
-        stockList=data[0]["stockList"]
-    }
-    res.json(stockList)
+    let data=await stocks.find()
+    res.json(data[0]["stockList"])
 })
 
 app.listen(5000,(req,res)=>{
