@@ -21,7 +21,7 @@ const update=async()=>{
     
     
     }
-    await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":curr}})
+    await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":new Date()}})
     console.log("Updated")
 
 }
