@@ -108,6 +108,9 @@ app.post('/api/sell/:email/:name/:symbol/:quantity/:price/:currentPrice',async(r
 })
 
 app.get('/api/stocks',async(req,res)=>{
+    console.log("Current time:", new Date().toLocaleTimeString());
+    console.log("Current timezone:", Intl.DateTimeFormat().resolvedOptions().timeZone);
+
     
     let data=await stocks.find()
     res.json(data[0]["stockList"])
