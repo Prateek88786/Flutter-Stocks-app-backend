@@ -26,11 +26,13 @@ const update=async()=>{
     
     }
     await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":dateString}})
+    console.log("Updated")
 
 }
 
 cron.schedule('30 16 * * *', async() => {
     await update()
+    console.log("Update function called")
 });
   
   
