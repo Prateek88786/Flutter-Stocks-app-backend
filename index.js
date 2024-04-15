@@ -6,13 +6,9 @@ const mongoose=require("mongoose");
 const app=express();
 var refresh;
 var stockList;
-const today = new Date();
-const year = today.getFullYear();
-const month = String(today.getMonth() + 1).padStart(2, '0'); 
-const day = String(today.getDate()).padStart(2, '0');
-const dateString = `${year}-${month}-${day}`;
 
 const update=async()=>{
+    let curr=new Date()
     let data=await stocks.find();
     refresh=data[0]["refreshed"]
     stockList=data[0]["stockList"]
@@ -25,15 +21,11 @@ const update=async()=>{
     
     
     }
-    await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":dateString}})
+    await stocks.updateMany({},{$set:{"stockList":stockList,"refreshed":curr}})
     console.log("Updated")
 
 }
 
-cron.schedule('30 16 * * *', async() => {
-    await update()
-    console.log("Update function called")
-});
   
   
     
@@ -51,7 +43,7 @@ const user=mongoose.model('user',{
 })
 const stocks=mongoose.model('stocks',{
     stockList:Array,
-    refreshed:String
+    refreshed:Date
 })
 app.get("/",(req,res)=>{
     res.send("App is running. Go to the defined routes for data. The only get route is /api/stocks ")
@@ -108,12 +100,18 @@ app.post('/api/sell/:email/:name/:symbol/:quantity/:price/:currentPrice',async(r
 })
 
 app.get('/api/stocks',async(req,res)=>{
-    console.log("Current time:", new Date().toLocaleTimeString());
-    console.log("Current timezone:", Intl.DateTimeFormat().resolvedOptions().timeZone);
+    let data=await stocks.find()
+    refresh=new Date(data[0]["refreshed"]);
+    let curr=new Date();
+    let diff=(curr-refresh)/(1000*60*60)
+    if(diff>24){
+        await update()
+        console.log("Update function over")
+    }
+    data=await stocks.find()
+    res.json(data[0]["stockList"])
 
     
-    let data=await stocks.find()
-    res.json(data[0]["stockList"])
 })
 
 app.listen(5000,(req,res)=>{
